@@ -17,68 +17,17 @@ document.addEventListener('DOMContentLoaded', function() {
     backgroundMusic.preload = 'auto';
     
     // Estado del reproductor
-    let isPlaying = false;
-    let audioInitialized = false;
+    let isPlaying = true; // Por defecto, la música empieza sonando
     let fadeInterval = null;
-    
-    /**
-     * FUNCIÓN: Mostrar tooltip temporal
-     */
-    function showTooltip(message, duration = 3000) {
-        // Crear tooltip si no existe
-        let tooltip = document.querySelector('.disk-tooltip');
-        if (!tooltip) {
-            tooltip = document.createElement('div');
-            tooltip.className = 'disk-tooltip';
-            document.body.appendChild(tooltip);
-        }
-        
-        tooltip.textContent = message;
-        tooltip.style.opacity = '1';
-        
-        // Posicionar cerca del disco
-        const diskRect = disk.getBoundingClientRect();
-        tooltip.style.top = diskRect.bottom + 10 + 'px';
-        tooltip.style.right = (window.innerWidth - diskRect.right - 10) + 'px'; // Ajustado
-        
-        // Ocultar después de X segundos
-        setTimeout(() => {
-            tooltip.style.opacity = '0';
-        }, duration);
-    }
-    
-    /**
-     * FUNCIÓN: Inicializar audio (primera interacción)
-     */
-    function initializeAudio() {
-        if (audioInitialized) return;
-        
-        audioInitialized = true;
-        isPlaying = true;
-        
-        // Quitamos la clase paused si la tenía
-        disk.classList.remove('paused');
-        
-        // Iniciamos reproducción con fade in
-        backgroundMusic.volume = 0;
-        backgroundMusic.play()
-            .then(() => {
-                fadeIn(1500);
-                console.log('%c🎵 Música activada', 'color: #451952');
-            })
-            .catch(e => {
-                console.log('Error al reproducir:', e);
-                // Si falla, reintentamos con interacción más fuerte
-                audioInitialized = false;
-                showTooltip('🔊 Haz click de nuevo para activar la música', 4000);
-            });
-    }
     
     /**
      * FUNCIÓN: Fade In del audio
      */
     function fadeIn(duration = 1000) {
         if (fadeInterval) clearInterval(fadeInterval);
+        
+        backgroundMusic.volume = 0;
+        backgroundMusic.play().catch(e => console.log("Error al reproducir:", e));
         
         const steps = 20;
         const stepTime = duration / steps;
@@ -122,29 +71,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /**
-     * INICIALIZACIÓN: Mostramos tooltip y preparamos el disco
+     * INICIALIZACIÓN: Empezamos con música y disco girando
      */
     if (disk) {
-        // Mostramos tooltip amigable al cargar
-        setTimeout(() => {
-            showTooltip('💿 Haz click en el disco para activar la música', 4000);
-        }, 500);
+        // Intentamos reproducir (los navegadores pueden bloquear autoplay)
+        fadeIn(1500);
         
         // Click en el disco
         disk.addEventListener('click', function() {
-            // Si el audio no está inicializado, lo iniciamos
-            if (!audioInitialized) {
-                initializeAudio();
-                return;
-            }
-            
-            // Si ya está inicializado, toggle normal
             if (isPlaying) {
+                // Parar música
                 fadeOut(800);
                 disk.classList.add('paused');
                 disk.src = 'images/disk-muted.png';
                 isPlaying = false;
             } else {
+                // Reanudar música
                 fadeIn(800);
                 disk.classList.remove('paused');
                 disk.src = 'images/disk.png';
@@ -224,5 +166,16 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     console.log('%c✨ Hey! Bienvenido a mi portfolio ✨', 'color: #451952; font-size: 16px; font-weight: bold;');
     console.log('%cExplora el código, todo está hecho con ❤️ y ☕', 'color: #a0a0a0; font-size: 14px;');
-    console.log('%c💿 El disco mágico controla la música... Haz click en él', 'color: #451952; font-size: 12px;');
+    console.log('%c💿 El disco mágico controla la música...', 'color: #451952; font-size: 12px;');
+
+    /**
+     * FUNCIÓN 4: Manejamos posible bloqueo de autoplay
+     */
+    document.addEventListener('click', function initAudio() {
+        // Si el audio no ha empezado por autoplay, intentamos con el primer click en cualquier parte
+        if (backgroundMusic.paused && isPlaying) {
+            fadeIn(1500);
+            document.removeEventListener('click', initAudio);
+        }
+    }, { once: true });
 });
