@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Creamos el elemento de audio
     const backgroundMusic = new Audio();
-    backgroundMusic.src = 'audio/background-music.mp3'; 
+    backgroundMusic.src = 'audio/ZZZ_OST_Fantasy-Serenity.mp3'; 
     backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.3;
+    backgroundMusic.volume = 0.2;
     backgroundMusic.preload = 'auto';
     
     // Estado del reproductor
