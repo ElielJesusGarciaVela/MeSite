@@ -9,88 +9,169 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== ELEMENTOS DEL DISCO Y AUDIO =====
     const disk = document.getElementById('disk');
     
-    // Creamos el elemento de audio
-    const backgroundMusic = new Audio();
-    backgroundMusic.src = 'audio/ZZZ_OST_Fantasy-Serenity.mp3'; 
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.2;
-    backgroundMusic.preload = 'auto';
+    // ===== PLAYLIST ALEATORIA =====
+    const playlist = [
+        'audio/ZZZ_OST_Fantasy-Serenity.mp3', 'audio/ZZZ_OST_Fantasy.mp3','audio/19.mp3'
+    ];
     
-    // Estado del reproductor
-    let isPlaying = true; // Por defecto, la música empieza sonando
-    let fadeInterval = null;
+    let availableSongs = [];
+    let currentAudio = null;
     
     /**
-     * FUNCIÓN: Fade In del audio
+     * FUNCIÓN: Inicializar o reiniciar la lista de canciones disponibles
      */
-    function fadeIn(duration = 1000) {
-        if (fadeInterval) clearInterval(fadeInterval);
+    function resetPlaylist() {
+        availableSongs = [...playlist];
+    }
+    
+    /**
+     * FUNCIÓN: Obtener una canción aleatoria sin repetir
+     */
+    function getRandomSong() {
+        if (availableSongs.length === 0) {
+            resetPlaylist();
+            console.log('%c🔄 Playlist reiniciada', 'color: #E1FF00; font-size: 12px;');
+        }
         
-        backgroundMusic.volume = 0;
-        backgroundMusic.play().catch(e => console.log("Error al reproducir:", e));
+        const randomIndex = Math.floor(Math.random() * availableSongs.length);
+        const selectedSong = availableSongs[randomIndex];
+        availableSongs.splice(randomIndex, 1);
+        
+        return selectedSong;
+    }
+    
+    /**
+     * FUNCIÓN: Crear nuevo elemento de audio con una canción aleatoria
+     */
+    function createNewAudio() {
+        const audio = new Audio();
+        audio.src = getRandomSong();
+        audio.volume = 0.3;
+        audio.preload = 'auto';
+        
+        audio.addEventListener('ended', function() {
+            console.log('%c⏭️ Siguiente canción...', 'color: #E1FF00; font-size: 12px;');
+            playNextSong();
+        });
+        
+        return audio;
+    }
+    
+    /**
+     * FUNCIÓN: Reproducir siguiente canción
+     */
+    function playNextSong() {
+        if (!isPlaying) return;
+        
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.src = '';
+        }
+        
+        currentAudio = createNewAudio();
+        
+        if (fadeInterval) clearInterval(fadeInterval);
+        currentAudio.volume = 0;
+        currentAudio.play().catch(e => console.log("Error al reproducir:", e));
         
         const steps = 20;
-        const stepTime = duration / steps;
+        const stepTime = 1000 / steps;
         const volumeStep = 0.3 / steps;
         let currentStep = 0;
         
         fadeInterval = setInterval(() => {
             currentStep++;
-            if (currentStep <= steps) {
-                backgroundMusic.volume = volumeStep * currentStep;
+            if (currentStep <= steps && currentAudio) {
+                currentAudio.volume = volumeStep * currentStep;
             } else {
                 clearInterval(fadeInterval);
                 fadeInterval = null;
             }
         }, stepTime);
+        
+        const songName = currentAudio.src.split('/').pop();
+        console.log('%c🎵 Reproduciendo: ' + songName, 'color: #E1FF00; font-size: 12px;');
     }
     
+    // Estado del reproductor
+    let isPlaying = true;
+    let fadeInterval = null;
+    
     /**
-     * FUNCIÓN: Fade Out del audio
+     * FUNCIÓN: Fade Out y pausa
      */
-    function fadeOut(duration = 1000) {
+    function fadeOut(duration = 800) {
         if (fadeInterval) clearInterval(fadeInterval);
+        
+        if (!currentAudio) return;
         
         const steps = 20;
         const stepTime = duration / steps;
-        const initialVolume = backgroundMusic.volume;
+        const initialVolume = currentAudio.volume;
         const volumeStep = initialVolume / steps;
         let currentStep = 0;
         
         fadeInterval = setInterval(() => {
             currentStep++;
-            if (currentStep <= steps) {
-                backgroundMusic.volume = initialVolume - (volumeStep * currentStep);
+            if (currentStep <= steps && currentAudio) {
+                currentAudio.volume = initialVolume - (volumeStep * currentStep);
             } else {
                 clearInterval(fadeInterval);
                 fadeInterval = null;
-                backgroundMusic.pause();
-                backgroundMusic.volume = 0.3;
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
             }
         }, stepTime);
     }
     
     /**
-     * INICIALIZACIÓN: Empezamos con música y disco girando
+     * FUNCIÓN: Iniciar reproducción (primera vez)
+     */
+    function startPlayback() {
+        resetPlaylist();
+        playNextSong();
+    }
+    
+    /**
+     * INICIALIZACIÓN
      */
     if (disk) {
-        // Intentamos reproducir (los navegadores pueden bloquear autoplay)
-        fadeIn(1500);
+        startPlayback();
         
-        // Click en el disco
         disk.addEventListener('click', function() {
             if (isPlaying) {
-                // Parar música
                 fadeOut(800);
                 disk.classList.add('paused');
-                disk.src = 'images/disk-muted.png';
+                disk.src = 'images/note_muted.png';
                 isPlaying = false;
             } else {
-                // Reanudar música
-                fadeIn(800);
                 disk.classList.remove('paused');
-                disk.src = 'images/disk.png';
+                disk.src = 'images/note.png';
                 isPlaying = true;
+                
+                if (!currentAudio || currentAudio.paused) {
+                    playNextSong();
+                } else {
+                    if (fadeInterval) clearInterval(fadeInterval);
+                    currentAudio.volume = 0;
+                    currentAudio.play().catch(e => console.log("Error al reproducir:", e));
+                    
+                    const steps = 20;
+                    const stepTime = 800 / steps;
+                    const volumeStep = 0.3 / steps;
+                    let currentStep = 0;
+                    
+                    fadeInterval = setInterval(() => {
+                        currentStep++;
+                        if (currentStep <= steps && currentAudio) {
+                            currentAudio.volume = volumeStep * currentStep;
+                        } else {
+                            clearInterval(fadeInterval);
+                            fadeInterval = null;
+                        }
+                    }, stepTime);
+                }
             }
         });
     }
@@ -98,9 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== RESTO DE FUNCIONALIDADES =====
     let magiaActivada = false;
 
-    /**
-     * FUNCIÓN 1: Botón mágico
-     */
     if (magicButton) {
         magicButton.addEventListener('click', function() {
             if (!magiaActivada) {
@@ -109,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 magiaActivada = true;
                 
                 mainTitle.style.transition = 'text-shadow 0.3s ease';
-                mainTitle.style.textShadow = '0 0 15px #451952';
+                mainTitle.style.textShadow = '0 0 15px #E1FF00';
                 
                 setTimeout(() => {
                     mainTitle.style.textShadow = 'none';
@@ -123,9 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * FUNCIÓN 2: Tags interactivos
-     */
     tags.forEach(tag => {
         tag.addEventListener('click', function() {
             const tagText = this.textContent;
@@ -147,12 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             alert(mensaje);
             
-            this.style.backgroundColor = '#451952';
-            this.style.color = '#0a0a0a';
+            this.style.backgroundColor = '#E1FF00';
+            this.style.color = '#000000';
             
             setTimeout(() => {
                 this.style.backgroundColor = '#1e1e1e';
-                this.style.color = '#451952';
+                this.style.color = '#E1FF00';
             }, 300);
         });
         
@@ -161,21 +236,74 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    /**
-     * FUNCIÓN 3: Consola amigable
-     */
-    console.log('%c✨ Hey! Bienvenido a mi portfolio ✨', 'color: #451952; font-size: 16px; font-weight: bold;');
-    console.log('%cExplora el código, todo está hecho con ❤️ y ☕', 'color: #a0a0a0; font-size: 14px;');
-    console.log('%c💿 El disco mágico controla la música...', 'color: #451952; font-size: 12px;');
+    console.log('%c✨ Hey! Bienvenido a mi portfolio ✨', 'color: #E1FF00; font-size: 16px; font-weight: bold;');
+    console.log('%cExplora el código, todo está hecho con ❤️ y ☕', 'color: #CCCCCC; font-size: 14px;');
+    console.log('%c💿 Playlist aleatoria - Sin repeticiones hasta reiniciar', 'color: #E1FF00; font-size: 12px;');
 
-    /**
-     * FUNCIÓN 4: Manejamos posible bloqueo de autoplay
-     */
     document.addEventListener('click', function initAudio() {
-        // Si el audio no ha empezado por autoplay, intentamos con el primer click en cualquier parte
-        if (backgroundMusic.paused && isPlaying) {
-            fadeIn(1500);
+        if ((!currentAudio || currentAudio.paused) && isPlaying) {
+            playNextSong();
             document.removeEventListener('click', initAudio);
         }
     }, { once: true });
+
+    /*  ============= TYPEWRITER EFFECT =============== */
+    
+    /**
+     * FUNCIÓN: Efecto de máquina de escribir
+     */
+    const typewriterElement = document.getElementById('typewriterText');
+    const phrases = [
+        "Coming Soon...",
+        "Under Construction...",
+        "Come back another day..."
+    ];
+    
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let isWaiting = false;
+    
+    function typeWriter() {
+        const currentPhrase = phrases[phraseIndex];
+        
+        if (isDeleting) {
+            // Borrando caracteres
+            typewriterElement.textContent = currentPhrase.substring(0, charIndex - 1);
+            charIndex--;
+            
+            // Si ya borró todo, cambia a la siguiente frase
+            if (charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                // Pequeña pausa antes de escribir la siguiente
+                setTimeout(typeWriter, 500);
+                return;
+            }
+        } else {
+            // Escribiendo caracteres
+            typewriterElement.textContent = currentPhrase.substring(0, charIndex + 1);
+            charIndex++;
+            
+            // Si terminó de escribir, espera y luego empieza a borrar
+            if (charIndex === currentPhrase.length) {
+                isWaiting = true;
+                setTimeout(() => {
+                    isDeleting = true;
+                    isWaiting = false;
+                    typeWriter();
+                }, 2000); // Espera 2 segundos antes de borrar
+                return;
+            }
+        }
+        
+        // Velocidad de escritura/borrado
+        const typingSpeed = isDeleting ? 50 : 100; // Borra más rápido que escribe
+        setTimeout(typeWriter, typingSpeed);
+    }
+    
+    // Iniciar el efecto
+    if (typewriterElement) {
+        setTimeout(typeWriter, 1000); // Pequeño delay inicial
+    }
 });

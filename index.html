@@ -1,59 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Portfolio · Intro</title>
+    <title>MeSite</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <!-- HEADER FLOTANTE CON DISCO -->
+    <!-- HEADER NEGRO CON DISCO -->
     <header class="site-header">
         <div class="header-content">
-            <img src="images/disk.png" alt="Disco giratorio" class="disk" id="disk">
+            <img src="images/note.png" alt="Disco giratorio" class="disk" id="disk">
         </div>
     </header>
 
-    <div class="container">
-        <div class="intro-card">
-            <!-- Título principal con highlight morado (ahora más oscuro) -->
-            <h1>
-                Hola, soy 
-                <span class="highlight">Tu Nombre</span>
-            </h1>
-            
-            <!-- Subtítulo (puede ser tu rol) -->
-            <h2>creativo digital · desarrollador · curioso profesional</h2>
-
-            <!-- Separador visual -->
-            <div class="separator"></div>
-
-            <!-- Descripción personal (sin mucho tecnicismo) -->
-            <p class="bio">
-                Me gusta crear cosas que combinen <span class="morado">lógica y estética</span>. 
-                Por aquí encontrarás una mezcla de código, diseño y pensamiento lateral. 
-                Vivo para experimentar y aprender algo nuevo cada día.
-            </p>
-
-            <!-- Pequeña sección de "datos random" muy personal -->
-            <div class="random-facts">
-                <span class="fact-tag">🎧 24/7 con música</span>
-                <span class="fact-tag">☕ cafeinómano funcional</span>
-                <span class="fact-tag">🌙 más productivo de noche</span>
-                <span class="fact-tag">📚 lector compulsivo</span>
-                <span class="fact-tag">🧩 resolviendo problemas</span>
-            </div>
-
-            <!-- Botón que podrías enlazar a algo (o tener función JS) -->
-            <button class="btn" id="magicButton">↯ pulse para magia</button>
-
-            <!-- Footer simpático -->
-            <div class="footer-note">
-                ⚡ esto recién empieza...
-            </div>
+    <!-- CONTENEDOR VACÍO (PARA IR AÑADIENDO COSAS) -->
+    <!-- NUEVO: Contenedor para el texto animado -->
+    <main class="container">
+        <div class="typewriter-container">
+            <span class="typewriter-text" id="typewriterText"></span>
+            <span class="cursor">|</span>
         </div>
-    </div>
+        <div class="coming-soon">
+            <p>Enjoy some music while you're at it.</p>
+        </div>
+        <div class="image-holder">
+            <img class="eridu-placeholder" src="images/new-eridu-placeholder.png" alt="new-eridu-placeholder">
+        </div>
+        
+        <!-- Aquí iremos añadiendo contenido -->
+    </main>
 
     <script src="js/javascript.js"></script>
 </body>
+
 </html>
