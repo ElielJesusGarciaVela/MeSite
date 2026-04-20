@@ -178,3 +178,29 @@ body {
         min-height: 50px;
     }
 }
+
+/* ===== ESTILOS PARA INFORMACIÓN DE ANIME ===== */
+.anime-info {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #E1FF00;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    border-radius: 0;
+    border: 1px solid #E1FF00;
+    max-width: 600px;
+}
+
+.anime-info h3 {
+    color: #E1FF00;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.anime-info p {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.anime-info strong {
+    color: #FFFFFF;
+}

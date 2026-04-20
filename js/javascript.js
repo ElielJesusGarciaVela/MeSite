@@ -1,3 +1,7 @@
+
+
+
+
 // Esperamos a que el DOM esté completamente cargado
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -306,4 +310,5 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typewriterElement) {
         setTimeout(typeWriter, 1000); // Pequeño delay inicial
     }
+
 });
